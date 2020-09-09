@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>青小医智慧康复</title>
+    <link rel="stylesheet" href="../resources/layui/css/layui.css" media="all">
+    <link href="../resources/layui/css/layui.mobile.css" rel="stylesheet">
+    <script src="../resources/layui/layui.all.js" charset="utf-8"></script>
+    <link href="../resources/css/lib/bootstrap.min.css" rel="stylesheet">
+    <link href="../resources/css/style.css" rel="stylesheet">
+    <link href="../resources/css/list.css" rel="stylesheet">
+
+
+
+    <link rel="stylesheet" type="text/css" href="../resources/css/index/animate.css">
+    <link rel="stylesheet" type="text/css" href="../resources/css/index/cbootstrap-select.min.css">
+    <link rel="stylesheet" type="text/css" href="../resources/css/index/cawesome-bootstrap-checkbox.css">
+    <link rel="stylesheet" type="text/css" href="../resources/css/index/select2.css">
+    <link rel="stylesheet" type="text/css" href="../resources/css/index/style.css">
+    <link rel="stylesheet" type="text/css" href="../resources/css/index/theme.css">
+    <link href="../resources/css/lib/font-awesome.min.css" rel="stylesheet">
+    <link href="../resources/css/lib/themify-icons.css" rel="stylesheet">
+    <link href="../resources/css/lib/data-table/buttons.bootstrap.min.css" rel="stylesheet" />
+    <link href="../resources/css/lib/menubar/sidebar.css" rel="stylesheet">
+    <link href="../resources/css/lib/bootstrap.min.css" rel="stylesheet">
+    <link href="../resources/css/lib/helper.css" rel="stylesheet">
+    <link href="../resources/css/style.css" rel="stylesheet">
+
+</head>
+<body>
+<!-- jquery vendor -->
+<script src="../resources/js/lib/jquery.min.js"></script>
+<script src="../resources/js/lib/jquery.nanoscroller.min.js"></script>
+<!-- bootstrap -->
+<script src="../resources/js/lib/bootstrap.min.js"></script>
+<!-- echarts -->
+<script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+
+
+
+<div class="sidebar">
+    <div class="menu-control toggle-sidebar">
+        <a class="navbar-brand" href="#"><i class="fa fa-bar-chart"></i> 青小医智慧康复</a>
+       <!-- <i class="fa fa-bars navicon"></i>-->
+    </div>
+    <ul class="menu">
+        <li class="submenu">
+            <a href="/healthCare/gamesJump/dataPage">
+                <div>
+                    <i class="menu-icon fa fa-th-large"></i>
+                    <span class="menu-title">数据可视化</span>
+                </div>
+            </a>
+        </li>
+        <li class="submenu">
+            <a href="/healthCare/gamesJump/historyPage">
+                <div>
+                    <i class="menu-icon fa fa-desktop"></i>
+                    <span class="menu-title">历史记录</span>
+                </div>
+            </a>
+        </li>
+
+        <li class="submenu">
+            <a href="/healthCare/gamesJump/exit">
+
+                <div>
+                    <i class="menu-icon fa fa-power-off"></i>
+                    <span class="menu-title">退出系统</span>
+                </div>
+            </a>
+
+        </li>
+
+    </ul>
+</div>
+
+<!--这是数据历史柱状图页面，苏东负责添加，加在这里就行了-->
+<section>
+    <form class="layui-form" style="padding-left: 5%;margin-left: 5%">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>历史记录</legend>
+        </fieldset>
+
+        <div class="layui-form-item">
+            <div id="history1" style="height: 80vh;width: 75vw;"></div>
+        </div>
+
+       <!-- <div class="layui-inline">
+            <label for="start_time" class="layui-form-label" style="width: 100px">起始时间：</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" autocomplete="off" id="start_time" name="start_time" placeholder="2020-08-15 18:24:17" value="2020-08-15 18:24:17">
+            </div>
+        </div>
+        <div class="layui-inline">
+            <label for="end_time" class="layui-form-label" style="width: 100px">结束时间：</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" autocomplete="off" id="end_time" name="end_time" placeholder="2020-08-16 20:14:35" value="2020-08-16 20:14:35">
+            </div>
+        </div>
+
+        <input type="hidden" class="layui-input" autocomplete="off" id="user_account" name="user_account" value="oQvs_5ejwb13yWgSLnBhwqffIYcg">
+        <button type="button" class="btn btn-success" onclick="query()" style="height: 30px; width: 80px;margin-left: 30px">查  询</button>-->
+    </form>
+</section>
+<!--个人历史表格js-->
+<script type="text/javascript" src="../resources/js/history.js" charset="utf-8"></script>
+
+</body>
+
+</html>
+

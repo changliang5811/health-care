@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zcl.dao.ItemManageDao">
+    <select id="selectAllItem" resultType="com.zcl.entity.TrainItem">
+        select item_id,name,stage_id,stage_name,day_num,group_num,action_num,break_time,status,notes
+        from trainitem
+    </select>
+    <!--查询该账户下最新的训练计划-->
+    <select id="queryTopItemPlanByAccount" parameterType="String" resultType="com.zcl.entity.TrainPlan">
+        select plan_id,user_account,item_id,item_name,update_time,day_num,group_num,action_num,break_time,coefficient,threshold,advice,train_type
+		from trainplan
+		where user_account = #{user_account}
+		and update_time
+		IN (select max(update_time) from trainplan where user_account = #{user_account} GROUP BY item_id,train_type)
+    </select>
+    <insert id="insertItemPlan" parameterType="com.zcl.entity.TrainPlan">
+        insert into trainplan(user_account,item_id,item_name,update_time,day_num,group_num,action_num,break_time,coefficient,threshold,advice,train_type)
+        values(#{user_account},#{item_id},#{item_name},date_format(#{update_time},'%Y-%m-%d %H:%i:%S'),#{day_num},#{group_num},#{action_num},#{break_time},#{coefficient},#{threshold},#{advice},#{train_type})
+    </insert>
+    <update id="updateGroupNum">
+    update trainplan
+        <set>
+            <if test="update_time != null">
+                update_time = date_format(#{update_time},'%Y-%m-%d %H:%i:%S'),
+            </if>
+           group_num = #{group_num}
+        </set>
+
+        where plan_id = #{plan_id}
+
+    </update>
+    <!--根据账户和动作编号查询该动作最新一次更新-->
+    <select id="selectTopItemPlanByAccountAndItemId" resultType="com.zcl.entity.TrainPlan">
+        select plan_id,user_account,item_id,item_name,update_time,day_num,group_num,action_num,break_time,coefficient,threshold,advice,train_type
+        from trainplan
+        WHERE user_account = #{user_account} and item_id = #{item_id}
+        <if test="train_type!=null">
+            and train_type = #{train_type}
+        </if>
+        ORDER BY update_time DESC LIMIT 1
+    </select>
+    <update id="updateItemCoefByAccountAndItem" parameterType="com.zcl.entity.TrainPlan">
+        update trainplan
+        <set>
+            <if test="coefficient!=null">
+                coefficient = #{coefficient},
+            </if>
+            <if test="advice!=null">
+                advice = #{advice},
+            </if>
+            <if test="update_time!=null">
+                update_time = date_format(#{update_time},'%Y-%m-%d %H:%i:%S'),
+            </if>
+            <if test="group_num!=null">
+                group_num = #{group_num},
+            </if>
+            threshold = #{threshold}
+        </set>
+        <where>
+            plan_id = #{plan_id}
+        </where>
+    </update>
+    <insert id="insertTrainInfo" parameterType="com.zcl.entity.TrainInfo">
+        insert into trainInfo(user_account,plan_id,group_info,start_time,end_time,train_type)
+        values(#{user_account},#{plan_id},#{group_info},date_format(#{start_time},'%Y-%m-%d %H:%i:%S'),date_format(#{end_time},'%Y-%m-%d %H:%i:%S'),#{train_type})
+    </insert>
+    <insert id="insertTrainLog" parameterType="com.zcl.entity.TrainLog">
+        insert into trainlog
+        (user_account,train_id,train_time,status,ax,ay,az,wx,wy,wz,dir_b,dir_r,dir_a)
+        values
+        (#{user_account},#{train_id},date_format(#{train_time},'%Y-%m-%d %H:%i:%S'),#{status},#{ax},#{ay},#{az},#{wx},#{wy},#{wz},#{dir_b},#{dir_r},#{dir_a})
+    </insert>
+    <select id="queryTopHistoryByAccount" resultType="com.zcl.entity.TrainInfo">
+        select train_id,user_account,plan_id,group_info,start_time,end_time,train_type
+        from trainInfo
+        where user_account = #{user_account} and plan_id = #{plan_id} and group_info = #{group_info}
+        order by train_id DESC LIMIT 1
+    </select>
+    <update id="updateEndTimeInTrainInfoByTrainId">
+        update trainInfo
+        <set>
+            <if test="end_time!=null">
+                end_time = date_format(#{end_time},'%Y-%m-%d %H:%i:%S')
+            </if>
+        </set>
+        where train_id = #{train_id}
+    </update>
+    <resultMap id="ItemsHistory" type="com.zcl.entity.TrainPlan">
+        <id column="item_id" property="item_id"/>
+        <result column="user_account" property="user_account"/>
+        <result column="update_time" property="update_time"/>
+        <result column="train_type" property="train_type"/>
+        <result column="item_name" property="item_name"/>
+        <result column="day_num" property="day_num"/>
+        <result column="group_num" property="group_num"/>
+        <collection property="trainInfo" ofType="com.zcl.entity.TrainInfo" column="plan_id">
+            <id property="train_id" column="train_id"/>
+            <result column="plan_id" property="plan_id"/>
+            <result column="group_info" property="group_info"/>
+            <result column="start_time" property="start_time"/>
+            <result column="end_time" property="end_time"/>
+        </collection>
+    </resultMap>
+    <!--查询训练记录-->
+    <select id="selectHistoryRecentWeekByAccount" resultMap="ItemsHistory">
+       select item_id,tp.user_account as user_account,
+        tp.train_type as train_type,ti.plan_id as plan_id,update_time,item_name,day_num,group_num,train_id,start_time,end_time,group_info
+        from trainplan tp LEFT JOIN trainInfo ti
+        ON tp.plan_id = ti.plan_id
+		WHERE tp.update_time &gt; date_format(#{start_time},'%Y-%m-%d %H:%i:%S')
+        and tp.update_time &lt; date_format(#{end_time},'%Y-%m-%d %H:%i:%S')
+        and tp.user_account = #{user_account}
+        ORDER BY item_id,update_time DESC
+    </select>
+       <!--查询该账户下最新的训练计划-->
+    <select id="queryTopItemPlanOfFastTrainByAccount" parameterType="String" resultType="com.zcl.entity.TrainPlan">
+        select plan_id,user_account,item_id,item_name,update_time,day_num,group_num,action_num,break_time,coefficient,threshold,advice,train_type
+		from trainplan
+		where user_account = #{user_account}
+		and update_time
+		IN (select max(update_time) from trainplan where user_account = #{user_account} and train_type = 'fastTrain' GROUP BY item_id,train_type)
+    </select>
+    <select id="queryTrainInfoByTrainPlan" parameterType="String" resultType="com.zcl.entity.TrainInfo">
+        SELECT user_account,train_id,plan_id,group_info,start_time,end_time,train_type
+        FROM trainInfo
+        WHERE plan_id = #{plan_id} and user_account = #{user_account}
+        AND start_time &gt; date_format(#{start_time},'%Y-%m-%d %H:%i:%S')
+        AND end_time &lt; date_format(#{end_time},'%Y-%m-%d %H:%i:%S')
+    </select>
+</mapper>
