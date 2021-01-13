@@ -29,7 +29,7 @@ public class ItemManageController {
     private ItemManageService itemManageService;
 
     /**
-     * 添加用户更新的阈值，为空则更新操作,不为空则添加
+     * 添加用户更新的阈值，为空则更新操作,不为空则添加,其中包括静态阈值的添加
      * train_type为（fastTrain/customTrain）
      * e.g.user_account=test&item_id=201&update_time=2020-05-22 12:00:00&maxValue=600&train_type=customTrain
      * @param user_account
@@ -37,25 +37,49 @@ public class ItemManageController {
      * @return hashMap
      */
     @RequestMapping(value = "/insertItemPlanCoef",method = RequestMethod.POST)
-    public Map<String, Object> insertItemPlanCoef(String user_account, String item_id, String update_time, String maxValue, String train_type){
+    public Map<String, Object> insertItemPlanCoef(String user_account, String item_id, String update_time, String maxValue,String static_maxValue, String train_type){
         Map<String,Object> hashMap = new HashMap<>();
         try{
             TrainPlan trainPlan = itemManageService.selectTopItemPlanByAccountAndItemId(user_account,item_id,train_type);
-            Double threshold = Float.parseFloat(maxValue)*0.7;//此处先写死，后期再更改
+
             trainPlan.setUpdate_time(update_time);
             Integer i = 0;
-            String coef = trainPlan.getCoefficient()==null?"":trainPlan.getCoefficient();
+//            String coef = trainPlan.getCoefficient()==null?"":trainPlan.getCoefficient();
             String thre = trainPlan.getThreshold()==null?"":trainPlan.getThreshold();
-            if (coef.equals("")||thre.equals("")){
-                trainPlan.setCoefficient(String.valueOf(0.7));
-                trainPlan.setThreshold(String.format("%.2f",threshold));
+            String static_thre = trainPlan.getStatic_threshold()==null?"":trainPlan.getStatic_threshold();
+            //此处0.7的系数先写死，后期再更改
+            trainPlan.setCoefficient(String.valueOf(0.7));
+
+            //当静态阈值和阈值全不为空的时候才会新增，否则就是更新操作
+            if (maxValue != null && static_maxValue == null){
+                trainPlan.setThreshold(String.format("%.2f",Float.parseFloat(maxValue)*0.7));
+            }else if (maxValue == null && static_maxValue != null){
+                trainPlan.setStatic_threshold(String.format("%.2f",Float.parseFloat(static_maxValue)*0.7));
+
+            }else if (maxValue != null && static_maxValue != null ){
+                trainPlan.setThreshold(String.format("%.2f",Float.parseFloat(maxValue)*0.7));
+                trainPlan.setStatic_threshold(String.format("%.2f",Float.parseFloat(static_maxValue)*0.7));
+            }
+            //静态阈值和阈值均不为空时，插入操作
+            if (!thre.equals("") && !static_thre.equals("")){
+                i = itemManageService.insertItemPlan(trainPlan);
+            }else{
                 i = itemManageService.updateItemCoefByAccountAndItem(trainPlan);
             }
-            else{
-                trainPlan.setCoefficient(String.valueOf(0.7));
-                trainPlan.setThreshold(String.format("%.2f",threshold));
-                i = itemManageService.insertItemPlan(trainPlan);
+            /*if (thre.equals("") && !static_thre.equals("")){
+//                trainPlan.setStatic_threshold(String.format("%.2f",static_threshold));
+                i = itemManageService.updateItemCoefByAccountAndItem(trainPlan);
+            }else if (!thre.equals("") && static_thre.equals("")){
+                //阈值不为空但是静态阈值是空值
+               // trainPlan.setThreshold(String.format("%.2f",threshold));
+                i = itemManageService.updateItemCoefByAccountAndItem(trainPlan);
+
             }
+            else{
+                trainPlan.setThreshold(String.format("%.2f",Float.parseFloat(maxValue)*0.7));
+                trainPlan.setStatic_threshold(String.format("%.2f",Float.parseFloat(static_maxValue)*0.7));
+                i = itemManageService.insertItemPlan(trainPlan);
+            }*/
             if (i>0){
                 hashMap.put("success",true);
                 hashMap.put("message","添加用户更新阈值成功");
@@ -74,6 +98,7 @@ public class ItemManageController {
         return hashMap;
 
     }
+
 
     /**
      * 列出所有康复动作
@@ -146,29 +171,33 @@ public class ItemManageController {
             trainPlan.setDay_num(1);
             trainPlan.setAction_num(10);
             trainPlan.setBreak_time(5);
-            //先寻找一个阈值以作备份，然后添加自定义训练数据，紧接着把准备好的阈值添加进去，如阈值不存在，则先插入数据，然后提示用户添加阈值
+            //先寻找一个阈值以作备份，然后添加自定义训练数据，紧接着把准备好的阈值添加进去
+            // 如阈值不存在，则先插入数据，然后提示用户添加阈值
             TrainPlan trainPlanToThreshold = itemManageService.selectTopItemPlanByAccountAndItemId(trainPlan.getUser_account(),trainPlan.getItem_id(),null);
             trainPlan.setItem_name(itemManageService.selectItemNameByItemId(trainPlan.getItem_id()));
-            if (trainPlanToThreshold==null||trainPlanToThreshold.getThreshold() == null) {
+            //现在是有查询阈值接口进行判断
+           if (trainPlanToThreshold==null|| (trainPlanToThreshold.getThreshold() == null && trainPlanToThreshold.getStatic_threshold() == null)) {
                 Integer i = itemManageService.insertItemPlan(trainPlan);
                 hashMap.put("success",false);
-                hashMap.put("message","对不起，您没有对该动作设定阈值，请返回个人中心进行阈值的设定");
-                logger.info("添加用户训练动作项目成功,但动作阈值需要额外添加");
+                hashMap.put("message","对不起，您没有对该动作设定阈值(包括静态阈值)，请返回个人中心进行阈值的设定");
+                logger.info("添加用户训练动作项目成功,但动作阈值(包括静态阈值)需要额外添加");
                 return hashMap;
-            }else {
+            }
+            else {
                 TrainPlan trainPlan1 = itemManageService.selectTopItemPlanByAccountAndItemId(trainPlan.getUser_account(),trainPlan.getItem_id(),trainPlan.getTrain_type());
-                trainPlan.setThreshold(trainPlanToThreshold.getThreshold());//为确保阈值成功添加，选取无类型查找的阈值
+                trainPlan.setThreshold(trainPlanToThreshold.getThreshold()==null?null:trainPlanToThreshold.getThreshold());//为确保阈值成功添加，选取无类型查找的阈值
+                trainPlan.setStatic_threshold(trainPlanToThreshold.getStatic_threshold()==null?null:trainPlanToThreshold.getStatic_threshold());
                 trainPlan.setCoefficient(String.valueOf(0.7));
-                //检查当天时候已添加过训练计划
+                //检查当天是否已添加过训练计划
                 if ((trainPlan1!=null)&&(trainPlan1.getUpdate_time().contains(trainPlan.getUpdate_time().substring(0,10)))){// 当天已添加过训练计划
                     Integer groupNum = trainPlan1.getGroup_num();//训练计划中已存在的组数
                     Integer newGroupNum = groupNum + trainPlan.getGroup_num();
                     //Integer updateStatus = itemManageService.updateGroupNum(newGroupNum,trainPlan.getUpdate_time(),trainPlan1.getPlan_id());
                     trainPlan.setGroup_num(newGroupNum);
                     trainPlan.setPlan_id(trainPlan1.getPlan_id());// 选择最新的plan_id
-                    Integer updateStatus = itemManageService.updateItemCoefByAccountAndItem(trainPlan);
+                    itemManageService.updateItemCoefByAccountAndItem(trainPlan);
                 }else{
-                    Integer i = itemManageService.insertItemPlan(trainPlan);
+                    itemManageService.insertItemPlan(trainPlan);
                 }
                 hashMap.put("success",true);
                 hashMap.put("message","添加用户自定义训练动作项目数据成功");
@@ -197,8 +226,8 @@ public class ItemManageController {
         Map<String,Object> hashMap = new HashMap<>();
         try{
             Integer i = itemManageService.insertTrainInfo(trainInfo);
-            Integer trainId = itemManageService.selectTrain_id(trainInfo.getUser_account(),trainInfo.getPlan_id(),trainInfo.getGroup_info());
             if (i>0){
+                Integer trainId = itemManageService.selectTrain_id(trainInfo.getUser_account(),trainInfo.getPlan_id(),trainInfo.getGroup_info());
                 hashMap.put("success",true);
                 hashMap.put("message","添加用户训练信息成功");
                 hashMap.put("Train_id",trainId);
@@ -354,20 +383,22 @@ public class ItemManageController {
         Map hashMap = new HashMap<String,Object>();
         try{
             Map returnData = itemManageService.queryThreshold(user_account,item_id);
-            if (returnData!=null){
+            //只判断加速度阈值
+            if (returnData!=null && returnData.get("threshold")!= null){
                 hashMap.put("success",true);
-                hashMap.put("message","查询某个动作有没有设定阈值成功");
+                hashMap.put("message","查询某个动作有没有设定阈值（包括静态阈值）成功");
                 hashMap.put("threshold",returnData.get("threshold"));
-                logger.info("查询某个动作有没有设定阈值成功");
+                hashMap.put("static_threshold",returnData.get("static_threshold"));
+                logger.info("查询某个动作的设定阈值（包括静态阈值）成功");
             }else{
                 hashMap.put("success",false);
-                hashMap.put("message","查询阈值为空");
-                logger.info("查询阈值为空");
+                hashMap.put("message","查询阈值（包括静态阈值）为空");
+                logger.info("查询阈值（包括静态阈值）为空");
             }
         }catch (Exception e){
             hashMap.put("success",false);
-            hashMap.put("message","查询某个动作有没有设定阈值失败，程序出错");
-            logger.info("查询某个动作有没有设定阈值失败，程序出错");
+            hashMap.put("message","查询某个动作有没有设定阈值（包括静态阈值）失败，程序出错");
+            logger.info("查询某个动作有没有设定阈值（包括静态阈值）失败，程序出错");
         }
         return hashMap;
     }
@@ -395,6 +426,7 @@ public class ItemManageController {
             trainPlan.setBreak_time(5);
             trainPlan.setCoefficient(String.valueOf(0.7));
             trainPlan.setThreshold(String.valueOf(2.5));
+            trainPlan.setStatic_threshold(String.valueOf(2.5));
             trainPlan.setTrain_type("fastTrain");
             Integer i = itemManageService.insertDefaultFastTrain(trainPlan);
             hashMap.put("success",true);

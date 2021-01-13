@@ -2,20 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.zcl.dao.ItemManageDao">
     <select id="selectAllItem" resultType="com.zcl.entity.TrainItem">
-        select item_id,name,stage_id,stage_name,day_num,group_num,action_num,break_time,status,notes
+        select item_id,name,stage_id,stage_name,day_num,group_num,action_num,break_time,status,notes,action_url_zheng,action_url_ce
         from trainitem
     </select>
     <!--查询该账户下最新的训练计划-->
     <select id="queryTopItemPlanByAccount" parameterType="String" resultType="com.zcl.entity.TrainPlan">
-        select plan_id,user_account,item_id,item_name,update_time,day_num,group_num,action_num,break_time,coefficient,threshold,advice,train_type
-		from trainplan
-		where user_account = #{user_account}
+        select plan_id,user_account,p.item_id,item_name,update_time,p.day_num,p.group_num,p.action_num,p.break_time,
+        coefficient,threshold,static_threshold,advice,train_type,i.action_url_zheng as action_url_zheng,i.action_url_ce as action_url_ce
+		from trainplan p,trainitem i
+		where user_account = #{user_account} and p.item_id = i.item_id
 		and update_time
-		IN (select max(update_time) from trainplan where user_account = #{user_account} GROUP BY item_id,train_type)
+		IN (select max(update_time) from trainplan where user_account = #{user_account} GROUP BY trainplan.item_id,trainplan.train_type)
     </select>
     <insert id="insertItemPlan" parameterType="com.zcl.entity.TrainPlan">
-        insert into trainplan(user_account,item_id,item_name,update_time,day_num,group_num,action_num,break_time,coefficient,threshold,advice,train_type)
-        values(#{user_account},#{item_id},#{item_name},date_format(#{update_time},'%Y-%m-%d %H:%i:%S'),#{day_num},#{group_num},#{action_num},#{break_time},#{coefficient},#{threshold},#{advice},#{train_type})
+        insert into trainplan
+        (user_account,item_id,item_name,update_time,day_num,group_num,action_num,break_time,coefficient,threshold,advice,train_type,static_threshold)
+        values
+        (#{user_account},#{item_id},#{item_name},date_format(#{update_time},'%Y-%m-%d %H:%i:%S'),#{day_num},#{group_num},#{action_num},#{break_time},#{coefficient},#{threshold},#{advice},#{train_type},#{static_threshold})
     </insert>
     <update id="updateGroupNum">
     update trainplan
@@ -31,7 +34,7 @@
     </update>
     <!--根据账户和动作编号查询该动作最新一次更新-->
     <select id="selectTopItemPlanByAccountAndItemId" resultType="com.zcl.entity.TrainPlan">
-        select plan_id,user_account,item_id,item_name,update_time,day_num,group_num,action_num,break_time,coefficient,threshold,advice,train_type
+        select plan_id,user_account,item_id,item_name,update_time,day_num,group_num,action_num,break_time,coefficient,threshold,advice,train_type,static_threshold
         from trainplan
         WHERE user_account = #{user_account} and item_id = #{item_id}
         <if test="train_type!=null">
@@ -42,9 +45,6 @@
     <update id="updateItemCoefByAccountAndItem" parameterType="com.zcl.entity.TrainPlan">
         update trainplan
         <set>
-            <if test="coefficient!=null">
-                coefficient = #{coefficient},
-            </if>
             <if test="advice!=null">
                 advice = #{advice},
             </if>
@@ -54,21 +54,27 @@
             <if test="group_num!=null">
                 group_num = #{group_num},
             </if>
-            threshold = #{threshold}
+            <if test="threshold!=null">
+                threshold = #{threshold},
+            </if>
+            <if test="static_threshold!=null">
+                static_threshold = #{static_threshold},
+            </if>
+            coefficient = #{coefficient}
         </set>
         <where>
             plan_id = #{plan_id}
         </where>
     </update>
     <insert id="insertTrainInfo" parameterType="com.zcl.entity.TrainInfo">
-        insert into trainInfo(user_account,plan_id,group_info,start_time,end_time,train_type)
-        values(#{user_account},#{plan_id},#{group_info},date_format(#{start_time},'%Y-%m-%d %H:%i:%S'),date_format(#{end_time},'%Y-%m-%d %H:%i:%S'),#{train_type})
+        insert into trainInfo(user_account,plan_id,group_info,start_time,train_type)
+        values(#{user_account},#{plan_id},#{group_info},date_format(#{start_time},'%Y-%m-%d %H:%i:%S'),#{train_type})
     </insert>
     <insert id="insertTrainLog" parameterType="com.zcl.entity.TrainLog">
         insert into trainlog
         (user_account,train_id,train_time,status,ax,ay,az,wx,wy,wz,dir_b,dir_r,dir_a)
         values
-        (#{user_account},#{train_id},date_format(#{train_time},'%Y-%m-%d %H:%i:%S'),#{status},#{ax},#{ay},#{az},#{wx},#{wy},#{wz},#{dir_b},#{dir_r},#{dir_a})
+        (#{user_account},#{train_id},date_format(#{train_time},'%Y-%m-%d %T.%f'),#{status},#{ax},#{ay},#{az},#{wx},#{wy},#{wz},#{dir_b},#{dir_r},#{dir_a})
     </insert>
     <select id="queryTopHistoryByAccount" resultType="com.zcl.entity.TrainInfo">
         select train_id,user_account,plan_id,group_info,start_time,end_time,train_type

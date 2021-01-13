@@ -20,8 +20,34 @@ public class TrainPlan {
     private String threshold;
     private String advice;
     private String train_type;
+    private String static_threshold;
     private List<TrainInfo> trainInfo;
+    private String action_url_zheng;
+    private String action_url_ce;
 
+    public String getAction_url_zheng() {
+        return action_url_zheng;
+    }
+
+    public String getAction_url_ce() {
+        return action_url_ce;
+    }
+
+    public void setAction_url_zheng(String action_url_zheng) {
+        this.action_url_zheng = action_url_zheng;
+    }
+
+    public void setAction_url_ce(String action_url_ce) {
+        this.action_url_ce = action_url_ce;
+    }
+
+    public void setStatic_threshold(String static_threshold) {
+        this.static_threshold = static_threshold;
+    }
+
+    public String getStatic_threshold() {
+        return static_threshold;
+    }
 
     public void setTrainInfo(List<TrainInfo> trainInfo) {
         this.trainInfo = trainInfo;

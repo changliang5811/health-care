@@ -16,6 +16,24 @@ public class TrainItem {
     private String setting;
     private Integer status;
     private String notes;
+    private String action_url_zheng;
+    private String action_url_ce;
+
+    public String getAction_url_zheng() {
+        return action_url_zheng;
+    }
+
+    public String getAction_url_ce() {
+        return action_url_ce;
+    }
+
+    public void setAction_url_zheng(String action_url_zheng) {
+        this.action_url_zheng = action_url_zheng;
+    }
+
+    public void setAction_url_ce(String action_url_ce) {
+        this.action_url_ce = action_url_ce;
+    }
 
     public void setItem_id(String item_id) {
         this.item_id = item_id;

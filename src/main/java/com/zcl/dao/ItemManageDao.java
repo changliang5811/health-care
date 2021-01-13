@@ -31,7 +31,7 @@ public interface ItemManageDao {
     String selectItemNameByItemId(String item_id);
     @Select("select MAX(train_id) from trainInfo where user_account= #{user_account} and plan_id = #{plan_id} and group_info = #{group_info}")
     Integer selectTrain_id(String user_account, Integer plan_id, String group_info);
-    @Select("select threshold,coefficient from trainplan where user_account=#{user_account} and item_id = #{item_id} ORDER BY update_time DESC LIMIT 1")
+    @Select("select threshold,coefficient,static_threshold from trainplan where user_account=#{user_account} and item_id = #{item_id} ORDER BY update_time DESC LIMIT 1")
     Map<String,String> queryThreshold(String user_account, String item_id);
     Integer updateGroupNum(Integer group_num, String update_time, Integer plan_id);
     List<TrainPlan> queryTopItemPlanOfFastTrainByAccount(@Param("user_account") String user_account);
