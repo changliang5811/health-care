@@ -33,6 +33,11 @@ public class pageJumpController {
         return "historyPage";
     }
 
+    @RequestMapping("/QhistoryPage")
+    public String QhistoryPage(){
+        return "QhistoryPage";
+    }
+
     @RequestMapping("/dataPage")
     public String dataPage(){
         return "dataPage";
@@ -42,4 +47,6 @@ public class pageJumpController {
     public String exit(){
         return "qdstsIndex";
     }
+
+
 }

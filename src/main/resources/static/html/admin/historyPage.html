@@ -7,7 +7,6 @@
     <title>青小医智慧康复</title>
     <link rel="stylesheet" href="../resources/layui/css/layui.css" media="all">
     <link href="../resources/layui/css/layui.mobile.css" rel="stylesheet">
-    <script src="../resources/layui/layui.all.js" charset="utf-8"></script>
     <link href="../resources/css/lib/bootstrap.min.css" rel="stylesheet">
     <link href="../resources/css/style.css" rel="stylesheet">
     <link href="../resources/css/list.css" rel="stylesheet">
@@ -27,6 +26,10 @@
     <link href="../resources/css/lib/bootstrap.min.css" rel="stylesheet">
     <link href="../resources/css/lib/helper.css" rel="stylesheet">
     <link href="../resources/css/style.css" rel="stylesheet">
+    <!-- 时间选择框 -->
+    <script src="../resources/js/laydate/laydate.js" charset="utf-8"></script>
+    <script src="../resources/layui/layui.all.js" charset="utf-8"></script>
+
 
 </head>
 <body>
@@ -36,8 +39,8 @@
 <!-- bootstrap -->
 <script src="../resources/js/lib/bootstrap.min.js"></script>
 <!-- echarts -->
-<script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
-
+<script type=“text/javascript” src="../resources/js/echarts.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts-all-3.js"></script>
 
 
 <div class="sidebar">
@@ -58,7 +61,15 @@
             <a href="/healthCare/gamesJump/historyPage">
                 <div>
                     <i class="menu-icon fa fa-desktop"></i>
-                    <span class="menu-title">历史记录</span>
+                    <span class="menu-title">个人训练历史记录</span>
+                </div>
+            </a>
+        </li>
+        <li class="submenu">
+            <a href="/healthCare/gamesJump/QhistoryPage">
+                <div>
+                    <i class="menu-icon fa fa-desktop"></i>
+                    <span class="menu-title">快速训练历史记录</span>
                 </div>
             </a>
         </li>
@@ -81,32 +92,43 @@
 <section>
     <form class="layui-form" style="padding-left: 5%;margin-left: 5%">
         <fieldset class="layui-elem-field layui-field-title">
-            <legend>历史记录</legend>
+            <legend>个人训练历史记录</legend>
         </fieldset>
 
-        <div class="layui-form-item">
-            <div id="history1" style="height: 80vh;width: 75vw;"></div>
-        </div>
-
-       <!-- <div class="layui-inline">
-            <label for="start_time" class="layui-form-label" style="width: 100px">起始时间：</label>
-            <div class="layui-input-inline">
-                <input type="text" class="layui-input" autocomplete="off" id="start_time" name="start_time" placeholder="2020-08-15 18:24:17" value="2020-08-15 18:24:17">
-            </div>
-        </div>
         <div class="layui-inline">
-            <label for="end_time" class="layui-form-label" style="width: 100px">结束时间：</label>
+            <label for="start_time" class="layui-form-label" style="width: 150px">自定义起始时间：</label>
             <div class="layui-input-inline">
-                <input type="text" class="layui-input" autocomplete="off" id="end_time" name="end_time" placeholder="2020-08-16 20:14:35" value="2020-08-16 20:14:35">
+                <input type="text" class="layui-input" autocomplete="off" id="start_time" name="start_time" placeholder="yyyy-MM-dd HH:mm:ss">
             </div>
         </div>
+        <button type="button" class="btn btn-success" onclick="query()" style="height: 30px; width: 80px;margin-left: 50px">查  询</button>
+        <button type="button" class="btn btn-success" onclick="querylastweek()" style="height: 30px; width: 80px;margin-left: 30px">上一周</button>
+        <button type="button" class="btn btn-success" onclick="querynextweek()" style="height: 30px; width: 80px;margin-left: 30px">下一周</button>
+        <div class="layui-form-item">
+            <div id="history1" style="height: 700px;width: 1100px;padding-left: 0.5%;"></div>
+        </div>
 
-        <input type="hidden" class="layui-input" autocomplete="off" id="user_account" name="user_account" value="oQvs_5ejwb13yWgSLnBhwqffIYcg">
-        <button type="button" class="btn btn-success" onclick="query()" style="height: 30px; width: 80px;margin-left: 30px">查  询</button>-->
+<!--        <div class="layui-inline0" >-->
+<!--            <label for="end_time" class="layui-form-label" style="width: 100px">结束时间：</label>-->
+<!--            <div class="layui-input-inline">-->
+<!--                <input type="text" class="layui-input" autocomplete="off" id="end_time" name="end_time" placeholder="2020-07-16 23:59:59" value="2020-07-16 23:59:59">-->
+<!--            </div>-->
+<!--        </div>-->
+        <input type="hidden" class="layui-input" autocomplete="off" id="user_account" name="user_account" value="oQvs_5Zxv6f_fYw7m5gaAHpPBX5U">
     </form>
 </section>
+<!--日期选择框js-->
+<script>
+    //执行一个laydate实例
+    laydate.render({
+        elem: '#start_time', //指定元素
+        type: 'date', //选择时间
+    });
+</script>
 <!--个人历史表格js-->
 <script type="text/javascript" src="../resources/js/history.js" charset="utf-8"></script>
+
+
 
 </body>
 

@@ -64,7 +64,7 @@ $(document).ready(function() {
 	$('#sub').click(function(){
 		var userName = $('#u').val();
 		var password = $('#p').val();
-		if (userName === "shenchen" && password === "shenchen"){
+		if (userName === "admin" && password === "admin123"){
 			alert("登录成功，欢迎您！");
 			window.location.href="/healthCare/gamesJump/dataPage";
 		}else{
